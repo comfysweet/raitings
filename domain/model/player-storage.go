@@ -60,15 +60,14 @@ func (storage *PlayerStorage) ChangeRating(id int, points int) {
 func (storage *PlayerStorage) addPlayer(id int, points int) {
 	player := &Player{Id: id, Points: points}
 	storage.PlayerById[id] = player
+
 	existPlayers, found := storage.PlayersByPoints.Get(points)
 	if found {
 		players := existPlayers.([]*Player)
-		players = append(players, player)
-		storage.PlayersByPoints.Put(points, players)
+		storage.putToStorage(players, player, points)
 	} else {
 		players := make([]*Player, 0)
-		players = append(players, player)
-		storage.PlayersByPoints.Put(points, players)
+		storage.putToStorage(players, player, points)
 	}
 }
 
@@ -84,13 +83,13 @@ func (storage *PlayerStorage) updatePlayer(id int, newPoints int) {
 		}
 	}
 	storage.PlayersByPoints.Put(player.Points, players)
+
 	player.Points = newPoints
 	existPlayersWithNewPoints, found := storage.PlayersByPoints.Get(newPoints)
 	if !found {
 		storage.PlayersByPoints.Put(newPoints, []*Player{player})
 	} else {
-		existPlayersWithNewPoints = append(existPlayersWithNewPoints.([]*Player), player)
-		storage.PlayersByPoints.Put(newPoints, existPlayersWithNewPoints)
+		storage.putToStorage(existPlayersWithNewPoints.([]*Player), player, newPoints)
 	}
 }
 
@@ -124,6 +123,11 @@ func (storage *PlayerStorage) updatePlaces() {
 		}
 	}
 	storage.Ratings = ratings
+}
+
+func (storage *PlayerStorage) putToStorage(players []*Player, player *Player, points int) {
+	players = append(players, player)
+	storage.PlayersByPoints.Put(points, players)
 }
 
 func remove(slice []*Player, s int) []*Player {
