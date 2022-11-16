@@ -1,1 +1,1 @@
-# raitings
+# ratings
